@@ -1,0 +1,38 @@
+:Product: Geomagnetic Data                AK.txt
+:Issued: 1833 UTC 14 Nov 2026
+#
+# Prepared by the U.S. Dept. of Commerce, NOAA, Space Weather Prediction Center
+# Please send comments and suggestions to SWPC.Webmaster@noaa.gov 
+# Updated every hour beginning at 0029 UTC.
+# Values shown as reported, SWPC does not verify accuracy.
+# Missing Data: -1
+#
+#      Geomagnetic A and K indices from the U.S. Geological Survey Stations
+#
+#               Geomagnetic
+#                 Dipole     A   ------------- 3 Hourly K Indices --------------
+# Station        Lat Long  Index 00-03 03-06 06-09 09-12 12-15 15-18 18-21 21-24
+#-------------------------------------------------------------------------------
+
+2026 Nov 13
+
+Boulder          N49 W 42    3    0     0     1     1     2     2     1     1
+Chambon-la-foret N-- E---   -1   -1    -1    -1    -1    -1    -1    -1    -1
+College          N65 W102    1    0     0     2     0     0     0     0     0
+Fredericksburg   N38 W 78    3    0     0     1     1     2     1     1     1
+Kergulen Island  S57 E130   -1   -1    -1    -1    -1    -1    -1    -1    -1
+Learmonth        S22 E114   -1   -1    -1    -1    -1    -1    -1    -1    -1
+Planetary(estimated Ap)      4  1.33  0.33  1.33  1.00  0.67  0.67  0.67  0.67
+Wingst           N54 E 95   -1   -1    -1    -1    -1    -1    -1    -1    -1
+
+
+2026 Nov 14
+
+Boulder          N49 W 42   -1    0     0     0     1     2     3    -1    -1
+Chambon-la-foret N-- E---   -1   -1    -1    -1    -1    -1    -1    -1    -1
+College          N65 W102   -1   -1    -1    -1    -1    -1    -1    -1    -1
+Fredericksburg   N38 W 78   -1    0     0     0     1     2     1    -1    -1
+Kergulen Island  S57 E130   -1   -1    -1    -1    -1    -1    -1    -1    -1
+Learmonth        S22 E114   -1   -1    -1    -1    -1    -1    -1    -1    -1
+Planetary(estimated Ap)      4  0.33  0.67  1.00  1.33  1.67  1.00 -1.00 -1.00
+Wingst           N54 E 95   -1   -1    -1    -1    -1    -1    -1    -1    -1

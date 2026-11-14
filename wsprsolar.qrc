@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>wsprsolar.ico</file>
+    </qresource>
+</RCC>

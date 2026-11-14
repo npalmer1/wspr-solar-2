@@ -1,0 +1,21 @@
+WSPR Solar 2 - what else this PC needs
+======================================
+
+WSPR Solar 2 collects the solar and geomagnetic conditions from NOAA's Space Weather Prediction
+Center (A and K indices, solar flux, sunspot number, X-ray background, proton flux, flares and solar
+radio bursts), shows what they mean for HF propagation, and keeps a day-by-day record of them for
+WSPR Scheduler.
+
+It needs:
+
+1. MySQL or MariaDB with the WSPR Scheduler databases - the same ones WSPR Scheduler uses. WSPR Solar 2
+   keeps its record in wspr_sol.weather. If WSPR Scheduler already runs on this PC, nothing else is
+   needed. Otherwise see "The WSPR Scheduler Database Configuration" at
+   https://sourceforge.net/projects/wspr-scheduler/files/
+   The database password is read from DBcredential in your user folder (written by WSPR Scheduler);
+   without one the default password is used.
+
+2. An internet connection, to services.swpc.noaa.gov (and hamqsl.com for the Forecast picture).
+
+Source code and bug reports: https://github.com/npalmer1/wspr-solar-2
+WSPR Solar 2 is free software under the GNU General Public License v3.

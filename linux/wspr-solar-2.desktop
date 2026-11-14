@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=WSPR Solar 2
+Comment=Solar and geomagnetic conditions from NOAA, for WSPR Scheduler
+Exec=WsprSolar
+Icon=wspr-solar-2
+Terminal=false
+Categories=Network;HamRadio;
