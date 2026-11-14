@@ -28,6 +28,8 @@ if(WIN32)   # icon and version details for WsprSolar.exe (Explorer, taskbar, ins
     set(RC_EXE WsprSolar)
     configure_file(wsprsolar.rc.in "${CMAKE_CURRENT_BINARY_DIR}/wsprsolar.rc" @ONLY)
     set(WSPRSOLAR_RC "${CMAKE_CURRENT_BINARY_DIR}/wsprsolar.rc")
+    # rebuild the .rc when the icon changes (CMake doesn't track the files an .rc points to)
+    set_property(SOURCE "${WSPRSOLAR_RC}" APPEND PROPERTY OBJECT_DEPENDS "${RC_ICON}")
 endif()
 
 add_executable(WsprSolar WIN32 main.cpp ${WSPRSOLAR_SOURCES} ${WSPRSOLAR_RC})
