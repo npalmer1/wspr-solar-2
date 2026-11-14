@@ -47,6 +47,10 @@ static void testGeo()
     CHECK(n3.found && n3.Ap == "-1" && n3.K[7] == "-1");
     CHECK(Solar::findGeo(daily, QDate(2026, 11, 3), "Planetary").Ap == "5");
     CHECK(Solar::findGeo(daily, QDate(2026, 10, 31), "Planetary").K[6] == "6.00");
+    const QString two = Solar::lastDays(daily, 2);
+    CHECK(two.startsWith(":Product: Daily Geomagnetic Data") && two.contains("#  Date"));
+    CHECK(two.contains("2026 11 13") && two.contains("2026 11 14") && !two.contains("2026 11 12"));
+    CHECK(Solar::findGeo(two, QDate(2026, 11, 14), "Planetary").Ap == "4");   // still readable
 }
 
 static void testSgas()

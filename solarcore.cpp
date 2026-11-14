@@ -187,6 +187,20 @@ Geo findGeo(const QString &text, const QDate &day, const QString &source)
     return g;
 }
 
+QString lastDays(const QString &dailyText, int days)
+{
+    static const QRegularExpression dateLine("^\\s*\\d{4}\\s+\\d{1,2}\\s+\\d{1,2}\\s");
+    QStringList head, data;
+    for (QString line : dailyText.split('\n')) {
+        line.remove('\r');
+        if (dateLine.match(line).hasMatch())
+            data << line;
+        else if (data.isEmpty() && !line.trimmed().isEmpty())
+            head << line;
+    }
+    return (head + data.mid(qMax(0, int(data.size()) - days))).join('\n') + '\n';
+}
+
 Daily findSolar(const QString &sgasText, const QDate &todayUtc)
 {
     Daily d;

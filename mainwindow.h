@@ -67,7 +67,7 @@ private slots:
 private:
     struct Files
     {
-        QString geo, sgas, events;
+        QString geo, daily, sgas, events;   // geo: AK.txt, or the 30-day file if AK.txt failed
         QByteArray protons, protons2, flares;
         bool geoOk = false, sgasOk = false, eventsOk = false, protonsOk = false, flaresOk = false;
     };
@@ -79,6 +79,7 @@ private:
     void fullUpdate();                       // C#: getLatestSolar + updateGeo + updateSolar + updateAllProtonandFlare
     void process(const Files &f);
     void fetchGeo(std::function<void(bool, const QString &)> done);
+    void showGeoText();                      // textBox1: 2 days, or 30 with the "30 day" box ticked
 
     // grids and labels
     void setupGrids();
@@ -88,6 +89,7 @@ private:
     void showStorms();                       // G/S/R labels and the conditions (C#: findstormlevels, stormlabels)
     void showBursts();                       // BurstdataGridView and the burst labels (C#: findBurstStorms)
     void setLabel(QLabel *l, const QString &text);
+    void showInternet(bool ok);              // Internetlabel, with the time of the last update
     void openLink(const QString &url);
     SolarStore::Filter filterFromUi(bool extra) const;
     void showDbError();
@@ -112,7 +114,9 @@ private:
     QString m_prevG;
     std::array<Solar::BurstPeriod, 8> m_bd;
     QString m_eventsText;
+    QString m_akText, m_dailyText;           // NOAA's AK.txt (when it can be had) and 30-day file
 
+    QDateTime m_lastUpdate;                  // the last full update (UTC)
     QDateTime m_testNow;
     QString m_testDir;
     QPointer<QWidget> m_help;

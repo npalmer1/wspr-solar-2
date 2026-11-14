@@ -154,6 +154,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->linksbutton1, &QPushButton::clicked, this, &MainWindow::linksbutton1_Click);
     connect(ui->linksbutton2, &QPushButton::clicked, this, &MainWindow::linksbutton2_Click);
     connect(ui->AusSWSbutton, &QPushButton::clicked, this, &MainWindow::AusSWSbutton_Click);
+    connect(ui->days30checkBox, &QCheckBox::toggled, this, &MainWindow::showGeoText);
 }
 
 MainWindow::~MainWindow()
@@ -229,7 +230,7 @@ void MainWindow::fetch(const QString &url, std::function<void(bool, const QByteA
 void MainWindow::checkNOAA(std::function<void(bool)> done)
 {
     auto finish = [this, done](bool ok) {
-        setLabel(ui->Internetlabel, ok ? "Internet connection normal" : "Warning: Internet connection may be down");
+        showInternet(ok);
         if (done)
             done(ok);
     };
@@ -287,8 +288,12 @@ void MainWindow::fullUpdate()
     if (m_busy)
         return;
     m_busy = true;
+    for (QPushButton *b : {ui->getLatestbutton, ui->forceUpdatebutton}) {
+        b->setEnabled(false);
+        b->setText("Updating...");
+    }
     auto f = std::make_shared<Files>();
-    auto pending = std::make_shared<int>(5);
+    auto pending = std::make_shared<int>(6);
     auto oneDone = [this, f, pending] {
         if (--*pending > 0)
             return;
@@ -304,6 +309,11 @@ void MainWindow::fullUpdate()
         process(*f);
     };
     fetchGeo([f, oneDone](bool ok, const QString &t) { f->geoOk = ok; f->geo = t; oneDone(); });
+    fetch(Solar::kGeoUrlAlt, [f, oneDone](bool ok, const QByteArray &d) {   // for the "30 day" box
+        if (ok)
+            f->daily = QString::fromLatin1(d);
+        oneDone();
+    });
     fetch(Solar::kSgasUrl, [f, oneDone](bool ok, const QByteArray &d) {
         f->sgasOk = ok;
         f->sgas = QString::fromLatin1(d);
@@ -339,12 +349,19 @@ void MainWindow::process(const Files &f)
         m_store.saveDefault(today);
     }
     const bool anyOk = f.geoOk || f.sgasOk || f.eventsOk || f.protonsOk || f.flaresOk;
-    setLabel(ui->Internetlabel, anyOk ? "Internet connection normal" : "Warning: Internet connection may be down");
+    if (anyOk)
+        m_lastUpdate = nowUtc();
+    showInternet(anyOk);
     setLabel(ui->datelabel, Solar::geoDateKey(today));
 
     // A and K indices (C#: getLatestSolar, updateGeo)
     if (f.geoOk) {
-        ui->textBox1->setPlainText(f.geo);
+        m_akText = f.geo.contains("Planetary(") ? f.geo : QString();
+        if (!f.daily.isEmpty())
+            m_dailyText = f.daily;
+        else if (m_akText.isEmpty())
+            m_dailyText = f.geo;
+        showGeoText();
         m_planetary = Solar::findGeo(f.geo, today, "Planetary");
         m_station = Solar::findGeo(f.geo, today, "Boulder");
         const Solar::Geo y = Solar::findGeo(f.geo, yesterday, "Planetary");
@@ -412,10 +429,38 @@ void MainWindow::process(const Files &f)
     showStorms();
     showBursts();
     m_busy = false;
+    ui->getLatestbutton->setText("Get Update");
+    ui->forceUpdatebutton->setText("Force update");
+    for (QPushButton *b : {ui->getLatestbutton, ui->forceUpdatebutton})
+        b->setEnabled(true);
     emit updated();
 }
 
 // ---- grids and labels ---------------------------------------------------------------------------
+
+void MainWindow::showInternet(bool ok)
+{
+    QString t = ok ? "Internet connection normal" : "Warning: Internet connection may be down";
+    if (m_lastUpdate.isValid())
+        t += m_lastUpdate.toString("  -  'updated' HH:mm 'UTC'");
+    setLabel(ui->Internetlabel, t);
+}
+
+void MainWindow::showGeoText()
+{
+    // unticked: yesterday and today - AK.txt, or those two days of the 30-day file; ticked: 30 days,
+    // newest at the bottom, shown from there
+    const bool days30 = ui->days30checkBox->isChecked() && !m_dailyText.isEmpty();
+    if (days30)
+        ui->textBox1->setPlainText(m_dailyText);
+    else if (!m_akText.isEmpty())
+        ui->textBox1->setPlainText(m_akText);
+    else
+        ui->textBox1->setPlainText(Solar::lastDays(m_dailyText, 2));
+    setLabel(ui->label2, days30 ? "Geomagnetic data (last 30 days)" : "Geomagnetic data (yesterday + today)");
+    if (days30)
+        ui->textBox1->moveCursor(QTextCursor::End);
+}
 
 void MainWindow::setLabel(QLabel *l, const QString &text)
 {

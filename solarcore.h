@@ -52,6 +52,10 @@ QString geoDateKey(const QDate &d);
 // Boulder, that gives Fredericksburg, with station saying so)
 Geo findGeo(const QString &text, const QDate &day, const QString &source);
 
+// daily-geomagnetic-indices.txt cut to its heading and the last `days` days (the 2-day view when
+// AK.txt can't be had)
+QString lastDays(const QString &dailyText, int days);
+
 // Yesterday's solar flux, sunspot number and X-ray background from sgas.txt (C#: findSolar). Only when
 // the report was issued today (UTC); found = false otherwise.
 struct Daily

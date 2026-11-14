@@ -7,6 +7,7 @@
 #include "ui_mainwindow.h"
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QDir>
 #include <QEventLoop>
 #include <QFile>
@@ -91,8 +92,14 @@ int main(int argc, char **argv)
               && cell(m, "dataGridView1", 0, 12) == "B6.7");
         CHECK(cell(m, "dataGridView1", 1, 0) == "n/a" && cell(m, "dataGridView1", 1, 7) == "3"
               && cell(m, "dataGridView1", 1, 10) == "-");
-        CHECK(lab(m, "label7") == "Boulder:");
-        CHECK(lab(m, "datelabel") == "2026 Nov 14" && lab(m, "Internetlabel") == "Internet connection normal");
+        CHECK(lab(m, "label7") == "Boulder:" && lab(m, "label2") == "Geomagnetic data (yesterday + today)");
+        CHECK(w<QPlainTextEdit>(m, "textBox1")->toPlainText().contains("Planetary(estimated Ap)"));   // AK.txt
+        w<QCheckBox>(m, "days30checkBox")->setChecked(true);   // 30 days, even with AK.txt to hand
+        CHECK(lab(m, "label2") == "Geomagnetic data (last 30 days)"
+              && w<QPlainTextEdit>(m, "textBox1")->toPlainText().contains("2026 10 16"));
+        w<QCheckBox>(m, "days30checkBox")->setChecked(false);
+        CHECK(w<QPlainTextEdit>(m, "textBox1")->toPlainText().contains("Planetary(estimated Ap)"));
+        CHECK(lab(m, "datelabel") == "2026 Nov 14" && lab(m, "Internetlabel").startsWith("Internet connection normal"));
         CHECK(lab(m, "conditionlabel") == "SFI: 119 - Higher HF propagation: fair ...Sun: quiet");
         CHECK(lab(m, "stormconditionlabel") == "Likely normal - (no storm or blackout)");
         CHECK(lab(m, "SSNlabel") == "High");
@@ -102,7 +109,38 @@ int main(int argc, char **argv)
         CHECK(lab(m, "currentBurstlabel") == "none or no significant bursts");
         CHECK(w<QPlainTextEdit>(m, "textBox1")->toPlainText().contains("Planetary(estimated Ap)"));
         CHECK(w<QPlainTextEdit>(m, "textBox2")->toPlainText().contains("10 cm 119"));
+        CHECK(lab(m, "Internetlabel") == "Internet connection normal  -  updated 20:40 UTC");
+        CHECK(w<QPushButton>(m, "getLatestbutton")->text() == "Get Update"
+              && w<QPushButton>(m, "getLatestbutton")->isEnabled());
         shot(m, "solar_current.png");
+
+        // Get Update: NOAA's files have changed (a new hour) - both panes and the grid follow
+        {
+            QFile ak(QDir(d.path()).filePath("AK.txt"));
+            ak.open(QIODevice::ReadOnly);
+            QString t = QString::fromLatin1(ak.readAll());
+            ak.close();
+            t.replace(":Issued: 1833 UTC", ":Issued: 1933 UTC").replace("1.00 -1.00 -1.00", "1.00  2.33 -1.00");
+            ak.open(QIODevice::WriteOnly | QIODevice::Truncate);
+            ak.write(t.toLatin1());
+            ak.close();
+            QFile sg(QDir(d.path()).filePath("sgas.txt"));
+            sg.open(QIODevice::ReadOnly);
+            QString s = QString::fromLatin1(sg.readAll());
+            sg.close();
+            s.replace("10 cm 119", "10 cm 121");
+            sg.open(QIODevice::WriteOnly | QIODevice::Truncate);
+            sg.write(s.toLatin1());
+            sg.close();
+        }
+        m.setNowForTest(now.addSecs(3600));
+        w<QPushButton>(m, "getLatestbutton")->click();
+        CHECK(waitUpdated(m));
+        CHECK(w<QPlainTextEdit>(m, "textBox1")->toPlainText().contains(":Issued: 1933 UTC"));
+        CHECK(w<QPlainTextEdit>(m, "textBox2")->toPlainText().contains("10 cm 121"));
+        CHECK(cell(m, "dataGridView1", 0, 8) == "2.33" && cell(m, "dataGridView1", 0, 10) == "121");
+        CHECK(lab(m, "Internetlabel").endsWith("updated 21:40 UTC"));
+        m.setNowForTest(now);
 
         // radio burst summary (C#: Burstgridbutton)
         w<QPushButton>(m, "Burstgridbutton")->click();
@@ -118,7 +156,7 @@ int main(int argc, char **argv)
         SolarStore::Filter all;
         const QList<SolarStore::Row> saved = m.store().rows(all);
         CHECK(saved.size() == 2 && saved[0].date == QDate(2026, 11, 14) && saved[1].date == QDate(2026, 11, 13));
-        CHECK(saved[1].flux == 119 && saved[1].SSN == 118 && saved[1].xray == "B6.7" && saved[0].Ap == 4);
+        CHECK(saved[1].flux == 121 && saved[1].SSN == 118 && saved[1].xray == "B6.7" && saved[0].Ap == 4);
         CHECK(saved[0].pf[0] == "0.2379/0.2741" && saved[1].pf[0] == "0.2407/0.2514");
         CHECK(saved[0].fl[0] == "00:10/C1.4/0.0013\n01:41/C1.7/0.0026" && saved[0].fl[6] == "18:45/C2.2/0.0014");
         CHECK(saved[0].s[2] == "RSP/0804-0811/III/2\nRSP/0848-0852/III/2\nRSP/0848-0852/III/2");
@@ -129,7 +167,7 @@ int main(int argc, char **argv)
         CHECK(rows(m, "dataGridView2") == 2);
         CHECK(cell(m, "dataGridView2", 0, 0) == "2026-11-14" && cell(m, "dataGridView2", 0, 2) == "0.33"
               && cell(m, "dataGridView2", 0, 4) == "1" && cell(m, "dataGridView2", 0, 10) == "-");
-        CHECK(cell(m, "dataGridView2", 1, 10) == "119" && cell(m, "dataGridView2", 1, 12) == "B6.7");
+        CHECK(cell(m, "dataGridView2", 1, 10) == "121" && cell(m, "dataGridView2", 1, 12) == "B6.7");
         shot(m, "solar_database.png");
 
         w<QLineEdit>(m, "AptextBox1")->setText("5");   // Ap from 5: neither day
@@ -178,6 +216,17 @@ int main(int argc, char **argv)
         CHECK(waitUpdated(m));
         CHECK(cell(m, "dataGridView1", 0, 0) == "4" && cell(m, "dataGridView1", 0, 2) == "0.33");
         CHECK(lab(m, "label7") == "Fredericksburg:" && cell(m, "dataGridView1", 1, 6) == "2");
+        // no AK.txt: the 2-day view is the last two days of the 30-day file
+        const QString two = w<QPlainTextEdit>(m, "textBox1")->toPlainText();
+        CHECK(lab(m, "label2") == "Geomagnetic data (yesterday + today)");
+        CHECK(two.contains("2026 11 13") && two.contains("2026 11 14") && !two.contains("2026 11 12")
+              && two.contains("Planetary"));
+        shot(m, "solar_2days.png");
+        w<QCheckBox>(m, "days30checkBox")->setChecked(true);
+        CHECK(lab(m, "label2") == "Geomagnetic data (last 30 days)");
+        CHECK(w<QPlainTextEdit>(m, "textBox1")->toPlainText().contains("2026 10 16"));
+        CHECK(w<QPlainTextEdit>(m, "textBox1")->textCursor().atEnd());
+        shot(m, "solar_30days.png");
     }
 
     {   // no internet at all: the database views still work, nothing is wiped

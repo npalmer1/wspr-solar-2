@@ -209,6 +209,11 @@ conditions for propagation at higher HF frequencies (higher MUF)</string></prope
      <property name="geometry"><rect><x>596</x><y>23</y><width>216</width><height>13</height></rect></property>
      <property name="text"><string>Solar and Geophysical activity (yesterday)</string></property>
     </widget>
+    <widget class="QCheckBox" name="days30checkBox">
+     <property name="geometry"><rect><x>470</x><y>20</y><width>70</width><height>19</height></rect></property>
+     <property name="toolTip"><string>Show the last 30 days of A and K indices (not saved)</string></property>
+     <property name="text"><string>30 day</string></property>
+    </widget>
     <widget class="QLabel" name="label2">
      <property name="geometry"><rect><x>32</x><y>23</y><width>201</width><height>13</height></rect></property>
      <property name="text"><string>Geomagnetic data (yesterday + today)</string></property>
