@@ -69,8 +69,9 @@ if(UNIX AND NOT APPLE)
     install(TARGETS WsprSolar RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(FILES linux/wspr-solar-2.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
     install(FILES linux/wspr-solar-2.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps)
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/About_WS_Solar_v3.rtf")
-        install(FILES About_WS_Solar_v3.rtf DESTINATION ${CMAKE_INSTALL_DATADIR}/wspr-solar-2)
+    file(GLOB _help "${CMAKE_CURRENT_SOURCE_DIR}/About_WS_Solar*.rtf")   # the F1 help file
+    if(_help)
+        install(FILES ${_help} DESTINATION ${CMAKE_INSTALL_DATADIR}/wspr-solar-2)
     endif()
 endif()
 

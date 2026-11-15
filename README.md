@@ -10,7 +10,8 @@ keeps a day-by-day record in the `wspr_sol` database used by WSPR Scheduler.
 - **Database**: the saved days - Ap/Kp/SFI/SSN, or proton flux / flares / radio bursts by 3-hour
   period - with date, Ap, SSN and flare-class filters.
 - Links to NOAA, the Australian Space Weather Service, hamqsl.com and background reading. F1 opens
-  `About_WS_Solar_v3.rtf` (in `C:\WSPR_Sked` or `~/WSPR_Sked`, or next to the program).
+  the newest `About_WS_Solar_vN.rtf` (`About_WS_Solar_v5.rtf` is in this folder; the installer puts it
+  next to the program; a newer one in `C:\WSPR_Sked` or `~/WSPR_Sked` would be used instead).
 
 It updates on start-up and every 30 minutes, and checks NOAA can be reached every 5 minutes.
 

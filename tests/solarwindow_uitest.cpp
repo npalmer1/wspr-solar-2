@@ -11,6 +11,7 @@
 #include <QDir>
 #include <QEventLoop>
 #include <QFile>
+#include <QFileInfo>
 #include <QLabel>
 #include <QPushButton>
 #include <QStandardItemModel>
@@ -239,6 +240,21 @@ int main(int argc, char **argv)
         app.exec();
         CHECK(lab(m, "Internetlabel").startsWith("Warning"));
         CHECK(m.store().rows(SolarStore::Filter{})[0].pf[0] == "0.2379/0.2741");
+    }
+
+    {   // F1: the newest About_WS_Solar_vN.rtf of the folders (C:\WSPR_Sked's v3 loses to v5)
+        QTemporaryDir a, b;
+        for (const QString &n : {QString("About_WS_Solar_v3.rtf"), QString("About_WS_Solar.rtf")}) {
+            QFile f(a.filePath(n));
+            f.open(QIODevice::WriteOnly);
+        }
+        QFile f5(b.filePath("About_WS_Solar_v5.rtf"));
+        f5.open(QIODevice::WriteOnly);
+        f5.close();
+        CHECK(MainWindow::helpFile({a.path(), b.path()}) == b.filePath("About_WS_Solar_v5.rtf"));
+        CHECK(MainWindow::helpFile({a.path()}) == a.filePath("About_WS_Solar_v3.rtf"));
+        CHECK(MainWindow::helpFile({"/nonexistent"}).isEmpty());
+        CHECK(QFileInfo::exists(QString(SOLAR_TEST_DATA) + "/../../About_WS_Solar_v5.rtf"));
     }
 
     scratch.dropTestDatabase();

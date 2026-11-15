@@ -6,3 +6,5 @@ installer/requirements.txt text eol=crlf
 # Linux scripts and menu entries
 *.sh text eol=lf
 *.desktop text eol=lf
+# the help file: keep exactly as Word/WordPad wrote it
+*.rtf -text

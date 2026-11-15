@@ -59,8 +59,8 @@ Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs c
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "requirements.txt"; DestDir: "{app}"; Flags: ignoreversion
-; the F1 help file, if it is in the source folder (C:\WSPR_Sked\About_WS_Solar_v3.rtf is used first)
-Source: "..\About_WS_Solar_v3.rtf"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+; the F1 help file (the newest About_WS_Solar_vN.rtf here or in C:\WSPR_Sked is the one shown)
+Source: "..\About_WS_Solar*.rtf"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [INI]
 Filename: "{app}\WSPR Solar 2 on GitHub.url"; Section: "InternetShortcut"; Key: "URL"; String: "{#AppUrl}"

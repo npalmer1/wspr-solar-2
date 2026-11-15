@@ -64,6 +64,12 @@ private slots:
     void solartimer_Tick();
     void showHelp();   // C#: Solar_HelpRequested (F1)
 
+public:
+    // the newest About_WS_Solar_vN.rtf in these folders (tests)
+    static QString helpFile(const QStringList &dirs);
+
+private slots:
+
 private:
     struct Files
     {

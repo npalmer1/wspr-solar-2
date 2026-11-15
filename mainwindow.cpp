@@ -18,6 +18,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QScreen>
 #include <QSettings>
 #include <QShortcut>
@@ -803,25 +804,41 @@ void MainWindow::solartimer_Tick()
 
 // ---- help (F1) ----------------------------------------------------------------------------------
 
+QString MainWindow::helpFile(const QStringList &dirs)
+{
+    static const QRegularExpression re("^About_WS_Solar(?:_v(\\d+))?\\.rtf$", QRegularExpression::CaseInsensitiveOption);
+    QString best;
+    int bestVersion = -1;
+    for (const QString &d : dirs)
+        for (const QString &name : QDir(d).entryList({"About_WS_Solar*.rtf"}, QDir::Files)) {
+            const auto m = re.match(name);
+            if (!m.hasMatch())
+                continue;
+            const int v = m.captured(1).toInt();   // no "_vN": 0
+            if (v > bestVersion) {                  // equal versions: the first folder wins
+                bestVersion = v;
+                best = QDir(d).filePath(name);
+            }
+        }
+    return best;
+}
+
 void MainWindow::showHelp()
 {
-    // C#: C:\WSPR_Sked\About_WS_Solar_v3.rtf, else next to the program
+    // The newest About_WS_Solar_vN.rtf in C:\WSPR_Sked (~/WSPR_Sked), next to the program, or where
+    // "cmake --install" puts it - so a newer one next to the program wins over the C# version's v3
+    // (C#: C:\WSPR_Sked\About_WS_Solar_v3.rtf, else next to the program)
 #ifdef Q_OS_WIN
     const QString sked = "C:/WSPR_Sked";
 #else
     const QString sked = QDir::home().filePath("WSPR_Sked");
 #endif
-    const QString app = QCoreApplication::applicationDirPath();
-    QString file;
-    for (const QString &d : {sked, app, QDir(app).filePath("../share/wspr-solar-2")})
-        if (QFileInfo::exists(QDir(d).filePath("About_WS_Solar_v3.rtf"))) {
-            file = QDir(d).filePath("About_WS_Solar_v3.rtf");
-            break;
-        }
+    const QString file = helpFile(
+        {sked, QCoreApplication::applicationDirPath(), QDir(QCoreApplication::applicationDirPath()).filePath("../share/wspr-solar-2")});
     QFile f(file);
     if (file.isEmpty() || !f.open(QIODevice::ReadOnly)) {
-        Msg::timed(this, QDir::toNativeSeparators(QDir(sked).filePath("About_WS_Solar_v3.rtf")) + " not found",
-                   "Help file", 3000);
+        Msg::timed(this, "About_WS_Solar_v5.rtf not found in " + QDir::toNativeSeparators(sked)
+                             + " or next to WSPR Solar 2", "Help file", 3000);
         return;
     }
     const Rtf::Html h = Rtf::toHtml(f.readAll());
