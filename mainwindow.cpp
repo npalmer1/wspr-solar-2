@@ -809,15 +809,21 @@ QString MainWindow::helpFile(const QStringList &dirs)
     static const QRegularExpression re("^About_WS_Solar(?:_v(\\d+))?\\.rtf$", QRegularExpression::CaseInsensitiveOption);
     QString best;
     int bestVersion = -1;
+    QDateTime bestTime;
     for (const QString &d : dirs)
         for (const QString &name : QDir(d).entryList({"About_WS_Solar*.rtf"}, QDir::Files)) {
             const auto m = re.match(name);
             if (!m.hasMatch())
                 continue;
             const int v = m.captured(1).toInt();   // no "_vN": 0
-            if (v > bestVersion) {                  // equal versions: the first folder wins
+            const QString path = QDir(d).filePath(name);
+            const QDateTime t = QFileInfo(path).lastModified();
+            // the highest version; of the same version, the one saved last (an edited copy next to the
+            // program beats an older one in C:\WSPR_Sked)
+            if (v > bestVersion || (v == bestVersion && t > bestTime)) {
                 bestVersion = v;
-                best = QDir(d).filePath(name);
+                bestTime = t;
+                best = path;
             }
         }
     return best;
@@ -844,7 +850,7 @@ void MainWindow::showHelp()
     const Rtf::Html h = Rtf::toHtml(f.readAll());
     if (!m_help) {
         m_help = new QWidget(nullptr, Qt::Window);
-        m_help->setWindowTitle("WSPR Solar 2 - Help");
+        m_help->setWindowTitle("WSPR Solar 2 - Help");   // (+ the file, below)
         m_help->setWindowIcon(windowIcon());
         auto *lay = new QVBoxLayout(m_help);
         lay->setContentsMargins(0, 0, 0, 0);
@@ -853,10 +859,11 @@ void MainWindow::showHelp()
         lay->addWidget(m_helpText);
         m_help->resize(760, 640);
     }
+    m_help->setWindowTitle("WSPR Solar 2 - Help - " + QDir::toNativeSeparators(file));   // which file it is
     QTextDocument *doc = m_helpText->document();
     doc->clear();
-    for (const Rtf::Image &img : h.images)
-        doc->addResource(QTextDocument::ImageResource, QUrl(img.name), img.image);
+    for (const Rtf::Image &img : h.images)   // shrunk smoothly (see rtfhtml.h)
+        doc->addResource(QTextDocument::ImageResource, QUrl(img.name), img.forDisplay(m_help->devicePixelRatioF()));
     m_helpText->setHtml(h.ok ? h.html : QString::fromUtf8(f.readAll()));
     m_helpText->moveCursor(QTextCursor::Start);
     m_help->show();

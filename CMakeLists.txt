@@ -36,6 +36,20 @@ add_executable(WsprSolar WIN32 main.cpp ${WSPRSOLAR_SOURCES} ${WSPRSOLAR_RC})
 target_link_libraries(WsprSolar PRIVATE solarcore Qt6::Widgets)
 target_compile_definitions(WsprSolar PRIVATE WSPRSOLAR_VERSION="${PROJECT_VERSION}")
 
+# The F1 help file: copied next to the program whenever it changes, so running from Qt Creator shows
+# the copy in this folder (the one being edited), not an old one left in the build folder
+file(GLOB WSPRSOLAR_HELP "${CMAKE_CURRENT_SOURCE_DIR}/About_WS_Solar*.rtf")
+set(_help_out)
+foreach(_h ${WSPRSOLAR_HELP})
+    get_filename_component(_n "${_h}" NAME)
+    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${_n}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${_h}" "${CMAKE_CURRENT_BINARY_DIR}/${_n}"
+        DEPENDS "${_h}" COMMENT "Help file ${_n} next to WsprSolar")
+    list(APPEND _help_out "${CMAKE_CURRENT_BINARY_DIR}/${_n}")
+endforeach()
+add_custom_target(solar_help ALL DEPENDS ${_help_out})
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}")   # a new vN file
+
 # Windows: copy the Qt DLLs and plugins next to the program after each build (windeployqt).
 # NOAA's files come over https: windeployqt adds Qt's TLS plugin (tls/qschannelbackend.dll) for that.
 # The MySQL driver (sqldrivers/qsqlmysql.dll) and libmysql.dll are not part of Qt - they're copied from

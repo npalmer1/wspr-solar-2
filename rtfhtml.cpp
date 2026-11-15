@@ -258,7 +258,7 @@ void Converter::groupEnd(const State &closing)
                 w = w * closing.scalex / 100;
                 h = h * closing.scaley / 100;
                 const QString name = QString("rtfimage%1").arg(m_images.size() + 1);
-                m_images << Rtf::Image{name, img};
+                m_images << Rtf::Image{name, img, QSize(w, h)};
                 flushRun();
                 m_para += QString("<img src=\"%1\" width=\"%2\" height=\"%3\">").arg(name).arg(w).arg(h);
             }
@@ -495,3 +495,15 @@ Html toHtml(const QByteArray &rtf)
     return Converter(rtf).run();
 }
 } // namespace Rtf
+
+QImage Rtf::Image::forDisplay(qreal dpr) const
+{
+    if (image.isNull() || !shown.isValid() || shown.isEmpty())
+        return image;
+    const QSize px = (QSizeF(shown) * qMax<qreal>(1.0, dpr)).toSize();
+    if (px.width() >= image.width() && px.height() >= image.height())
+        return image;   // not shrunk: nothing to smooth
+    QImage out = image.scaled(px, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    out.setDevicePixelRatio(qMax<qreal>(1.0, dpr));
+    return out;
+}
