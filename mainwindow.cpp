@@ -12,6 +12,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QFontMetrics>
 #include <QHeaderView>
 #include <QIntValidator>
 #include <QNetworkAccessManager>
@@ -621,9 +622,30 @@ void MainWindow::showBursts()
     }
     addRow(m_burstGrid, cells);
     ui->BurstdataGridView->resizeRowsToContents();
+    alignBurstHeadings();
     const Solar::BurstNow n = Solar::currentBurst(m_bd, p);
     setLabel(ui->Burstwarninglabel, n.warning);
     setLabel(ui->currentBurstlabel, n.current);
+}
+
+void MainWindow::alignBurstHeadings()
+{
+    // C# placed these at fixed positions to match its grid; Qt's header height and line spacing differ
+    // by platform and font, so they're put level with the grid's four lines of text as drawn
+    QTableView *v = ui->BurstdataGridView;
+    if (m_burstGrid->rowCount() == 0)
+        return;
+    const QFontMetrics fm(v->font());
+    const int ls = fm.lineSpacing();
+    const QRect cell = v->visualRect(m_burstGrid->index(0, 0));   // in the grid's viewport
+    const int top = v->y() + v->viewport()->y() + cell.top() + (cell.height() - 4 * ls) / 2;
+    const QList<QLabel *> heads{ui->label27, ui->label29, ui->label31, ui->label32};
+    for (int i = 0; i < heads.size(); ++i) {
+        QLabel *l = heads[i];
+        l->setFont(v->font());
+        l->adjustSize();
+        l->move(v->x() - l->width() - 4, top + i * ls + (ls - l->height()) / 2);
+    }
 }
 
 SolarStore::Filter MainWindow::filterFromUi(bool extra) const
@@ -742,6 +764,7 @@ void MainWindow::Burstgridbutton_Click()
         showBursts();
         ui->BurstgroupBox->show();
         ui->BurstgroupBox->raise();
+        alignBurstHeadings();
         ui->Burstgridbutton->setText("Hide bursts");
     } else {
         ui->BurstgroupBox->hide();

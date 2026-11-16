@@ -20,6 +20,7 @@
 #include <QTimer>
 #include <QTimeZone>
 #include <cstdio>
+#include <cstdlib>
 
 static int failures = 0;
 #define CHECK(cond) do { if (!(cond)) { ++failures; std::printf("FAIL line %d: %s\n", __LINE__, #cond); } \
@@ -149,6 +150,19 @@ int main(int argc, char **argv)
         CHECK(cell(m, "BurstdataGridView", 0, 2) == "15min Moderate\nWideband\nnone\nnone");
         CHECK(cell(m, "BurstdataGridView", 0, 3) == "insignificant\n\nnone\nnone");
         CHECK(cell(m, "BurstdataGridView", 0, 7).isEmpty());   // 21-00 hasn't started
+        {   // the four row headings level with the four lines of text in the cells
+            auto *v = w<QTableView>(m, "BurstdataGridView");
+            const QRect c = v->visualRect(v->model()->index(0, 0));
+            const int ls = QFontMetrics(v->font()).lineSpacing();
+            const int first = v->y() + v->viewport()->y() + c.top() + (c.height() - 4 * ls) / 2;
+            int i = 0;
+            for (const char *n : {"label27", "label29", "label31", "label32"}) {
+                const QLabel *l = w<QLabel>(m, n);
+                const int mid = l->y() + l->height() / 2, want = first + i * ls + ls / 2;
+                CHECK(std::abs(mid - want) <= 1 && l->geometry().right() < v->x());
+                ++i;
+            }
+        }
         shot(m, "solar_bursts.png");
         w<QPushButton>(m, "Burstgridbutton")->click();
         CHECK(!w<QWidget>(m, "BurstgroupBox")->isVisible());
@@ -254,6 +268,18 @@ int main(int argc, char **argv)
         CHECK(MainWindow::helpFile({a.path(), b.path()}) == b.filePath("About_WS_Solar_v5.rtf"));
         CHECK(MainWindow::helpFile({a.path()}) == a.filePath("About_WS_Solar_v3.rtf"));
         CHECK(MainWindow::helpFile({"/nonexistent"}).isEmpty());
+        // the same version in two folders: the one saved last wins, whichever folder it's in
+        QFile old5(a.filePath("About_WS_Solar_v5.rtf"));
+        old5.open(QIODevice::WriteOnly);
+        old5.close();
+        old5.open(QIODevice::ReadWrite);
+        old5.setFileTime(QDateTime::currentDateTime().addDays(-1), QFileDevice::FileModificationTime);
+        old5.close();
+        CHECK(MainWindow::helpFile({a.path(), b.path()}) == b.filePath("About_WS_Solar_v5.rtf"));
+        f5.open(QIODevice::ReadWrite);
+        f5.setFileTime(QDateTime::currentDateTime().addDays(-2), QFileDevice::FileModificationTime);
+        f5.close();
+        CHECK(MainWindow::helpFile({a.path(), b.path()}) == a.filePath("About_WS_Solar_v5.rtf"));
         CHECK(QFileInfo::exists(QString(SOLAR_TEST_DATA) + "/../../About_WS_Solar_v5.rtf"));
     }
 

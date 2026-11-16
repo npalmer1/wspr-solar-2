@@ -94,6 +94,7 @@ private:
     void showExtra();                        // dataGridView3 (C#: find_extra_data + find_burst_data)
     void showStorms();                       // G/S/R labels and the conditions (C#: findstormlevels, stormlabels)
     void showBursts();                       // BurstdataGridView and the burst labels (C#: findBurstStorms)
+    void alignBurstHeadings();               // the four row headings beside the burst grid, line by line
     void setLabel(QLabel *l, const QString &text);
     void showInternet(bool ok);              // Internetlabel, with the time of the last update
     void openLink(const QString &url);
