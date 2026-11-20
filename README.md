@@ -40,6 +40,17 @@ Tests: `-DWSPRSOLAR_TESTS=ON`, then `build/solar_test` and (with `QT_QPA_PLATFOR
 `build/solarwindow_uitest`. They read NOAA files saved in `tests/data` and use scratch databases
 (`wspr_sol_test`, `wspr_sol_uitest`), never the real `wspr_sol`.
 
+## Linux
+
+On Ubuntu, Debian or Raspberry Pi OS one script installs everything and builds the program:
+
+```
+wget https://raw.githubusercontent.com/npalmer1/wspr-solar-2/main/linux/solar_install.sh
+bash solar_install.sh
+```
+
+Run it again to update. See [linux/README.md](linux/README.md).
+
 ## Differences from the C# version
 
 - **A and K indices**: `AK.txt` comes from NOAA's FTP site, as in the C# version (Qt has no FTP, so

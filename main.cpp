@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationName("G4GCI");
     QApplication::setApplicationVersion(WSPRSOLAR_VERSION);
     QApplication::setWindowIcon(QIcon(":/wsprsolar.ico"));
+    QGuiApplication::setDesktopFileName("wspr-solar-2");   // Linux: the menu entry's icon in the taskbar
     applyAppFont();
 
     MainWindow w;
