@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(WsprSolar VERSION 0.2.1 LANGUAGES CXX)   # WSPR Solar 2 (the C# WSPR Solar was 0.1.27)
+project(WsprSolar VERSION 0.2.2 LANGUAGES CXX)   # WSPR Solar 2 (the C# WSPR Solar was 0.1.27)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,6 +15,7 @@ add_library(solarcore STATIC
     solarcore.h solarcore.cpp
     solarstore.h solarstore.cpp
     credentials.h credentials.cpp
+    ftpget.h ftpget.cpp
 )
 target_link_libraries(solarcore PUBLIC Qt6::Core Qt6::Sql Qt6::Network)
 target_include_directories(solarcore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -94,9 +95,12 @@ if(WSPRSOLAR_TESTS)
     add_executable(solar_test tests/solar_test.cpp)   # NOAA files in tests/data; scratch MySQL
     target_link_libraries(solar_test PRIVATE solarcore)
     target_compile_definitions(solar_test PRIVATE SOLAR_TEST_DATA="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
+    add_executable(ftp_test tests/ftp_test.cpp)   # FtpGet against tests/ftp_server.py (python3 + pyftpdlib)
+    target_link_libraries(ftp_test PRIVATE solarcore)
+    target_compile_definitions(ftp_test PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     add_executable(solarwindow_uitest tests/solarwindow_uitest.cpp ${WSPRSOLAR_SOURCES})   # offscreen; fake NOAA
     set_target_properties(solarwindow_uitest PROPERTIES AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(solarwindow_uitest PRIVATE solarcore Qt6::Widgets)
-    target_compile_definitions(solarwindow_uitest PRIVATE WSPRSOLAR_VERSION="${PROJECT_VERSION}"
+    target_compile_definitions(solarwindow_uitest PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}" WSPRSOLAR_VERSION="${PROJECT_VERSION}"
         SOLAR_TEST_DATA="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
 endif()

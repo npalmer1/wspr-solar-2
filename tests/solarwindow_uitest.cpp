@@ -13,9 +13,11 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QLabel>
+#include <QProcess>
 #include <QPushButton>
 #include <QStandardItemModel>
 #include <QTableView>
+#include <QTcpServer>
 #include <QTemporaryDir>
 #include <QTimer>
 #include <QTimeZone>
@@ -84,7 +86,7 @@ int main(int argc, char **argv)
         m.show();
         m.start();
         CHECK(waitUpdated(m));
-        CHECK(m.windowTitle().contains("WSPR Solar 2") && m.windowTitle().contains("V.0.2.1"));
+        CHECK(m.windowTitle().contains("WSPR Solar 2") && m.windowTitle().contains("V.0.2.2"));
 
         // current data (C#: dataGridView1)
         CHECK(rows(m, "dataGridView1") == 2);
@@ -242,6 +244,44 @@ int main(int argc, char **argv)
         CHECK(w<QPlainTextEdit>(m, "textBox1")->toPlainText().contains("2026 10 16"));
         CHECK(w<QPlainTextEdit>(m, "textBox1")->textCursor().atEnd());
         shot(m, "solar_30days.png");
+    }
+
+    {   // AK.txt over FTP (as the C# version): only the FTP server has it - Boulder, as with AK.txt
+        QProcess ftpd;
+        ftpd.start("python3", {QString(SOURCE_DIR "/tests/ftp_server.py"), QString(SOURCE_DIR "/tests/data"), "normal"});
+        const quint16 port = (ftpd.waitForStarted(5000) && ftpd.waitForReadyRead(10000))
+                                 ? quint16(ftpd.readLine().trimmed().toUInt()) : 0;
+        if (!port) {
+            std::printf("(no test FTP server - python3 + pyftpdlib - so the FTP checks are skipped)\n");
+        } else {
+            QTemporaryDir d;
+            MainWindow m;
+            m.setNowForTest(now);
+            m.setDataFolderForTest(copyData(d, false));   // no AK.txt over https
+            m.setGeoFtpForTest(QString("ftp://127.0.0.1:%1/AK.txt").arg(port));
+            m.show();
+            m.start();
+            CHECK(waitUpdated(m));
+            CHECK(lab(m, "label7") == "Boulder:");
+            CHECK(w<QPlainTextEdit>(m, "textBox1")->toPlainText().contains("Planetary(estimated Ap)"));
+        }
+        ftpd.kill();
+        ftpd.waitForFinished(3000);
+    }
+    {   // FTP server not answering: on to https / the 30-day file (Fredericksburg)
+        QTcpServer dead;
+        dead.listen(QHostAddress::LocalHost);
+        const quint16 port = dead.serverPort();
+        dead.close();
+        QTemporaryDir d;
+        MainWindow m;
+        m.setNowForTest(now);
+        m.setDataFolderForTest(copyData(d, false));
+        m.setGeoFtpForTest(QString("ftp://127.0.0.1:%1/AK.txt").arg(port));
+        m.show();
+        m.start();
+        CHECK(waitUpdated(m));
+        CHECK(lab(m, "label7") == "Fredericksburg:");
     }
 
     {   // no internet at all: the database views still work, nothing is wiped

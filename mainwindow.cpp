@@ -1,5 +1,6 @@
 // WSPR Solar 2 main window - see mainwindow.h. Handler names are the C# ones (Solar.cs).
 #include "mainwindow.h"
+#include "ftpget.h"
 #include "ui_mainwindow.h"
 
 #include "credentials.h"
@@ -274,15 +275,31 @@ void MainWindow::showDbError()
 
 void MainWindow::fetchGeo(std::function<void(bool, const QString &)> done)
 {
-    // AK.txt (C#: over FTP) - over https if NOAA's server gives it, else the 30-day file
-    fetch(Solar::kGeoUrl, [this, done](bool ok, const QByteArray &d) {
+    // AK.txt over FTP (as the C# version), then over https from the same server, else the 30-day file
+    auto viaHttps = [this, done] {
+        fetch(Solar::kGeoUrl, [this, done](bool ok, const QByteArray &d) {
+            const QString t = QString::fromLatin1(d);
+            if (ok && t.contains("Planetary(")) {
+                done(true, t);
+                return;
+            }
+            fetch(Solar::kGeoUrlAlt, [done](bool ok2, const QByteArray &d2) { done(ok2, QString::fromLatin1(d2)); });
+        });
+    };
+    if (!m_testDir.isEmpty() && m_geoFtpForTest.isEmpty()) {   // tests: the files in m_testDir
+        viaHttps();
+        return;
+    }
+    auto *ftp = new FtpGet(this);
+    connect(ftp, &FtpGet::finished, this, [ftp, done, viaHttps](bool ok, const QByteArray &d, const QString &) {
+        ftp->deleteLater();
         const QString t = QString::fromLatin1(d);
-        if (ok && t.contains("Planetary(")) {
+        if (ok && t.contains("Planetary("))
             done(true, t);
-            return;
-        }
-        fetch(Solar::kGeoUrlAlt, [done](bool ok2, const QByteArray &d2) { done(ok2, QString::fromLatin1(d2)); });
+        else
+            viaHttps();
     });
+    ftp->get(QUrl(m_geoFtpForTest.isEmpty() ? QString(Solar::kGeoFtpUrl) : m_geoFtpForTest), 20000);
 }
 
 void MainWindow::fullUpdate()

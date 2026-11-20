@@ -4,9 +4,9 @@
 // Everything here is a plain function of its inputs (the time is passed in), so it can be tested.
 //
 // Differences from the C# version (also in PORTING_NOTES.md):
-//  - The A/K indices: Qt has no FTP, so AK.txt is fetched over https from the same server; if that
-//    fails, daily-geomagnetic-indices.txt (planetary values only - no Boulder line). findGeo reads
-//    either layout.
+//  - The A/K indices: AK.txt over FTP as before (ftpget.h - Qt has no FTP of its own), then over https
+//    from the same server; if neither works, daily-geomagnetic-indices.txt (planetary values only - no
+//    Boulder line). findGeo reads either layout.
 //  - Month names are always English ("Sep", not "Sept" as .NET writes with the en-GB culture, which
 //    made the C# version miss the date every September).
 //  - Bad or missing numbers give empty results instead of an exception that stopped the whole update
@@ -26,7 +26,8 @@ namespace Solar {
 // ---- NOAA files ----------------------------------------------------------------------------------
 
 inline const char *kNoaaRoot = "https://services.swpc.noaa.gov/";
-inline const char *kGeoUrl = "https://ftp.swpc.noaa.gov/pub/lists/geomag/AK.txt";   // C#: ftp://ftp.swpc...
+inline const char *kGeoFtpUrl = "ftp://ftp.swpc.noaa.gov/pub/lists/geomag/AK.txt";   // C#: this
+inline const char *kGeoUrl = "https://ftp.swpc.noaa.gov/pub/lists/geomag/AK.txt";
 inline const char *kGeoUrlAlt = "https://services.swpc.noaa.gov/text/daily-geomagnetic-indices.txt";
 inline const char *kSgasUrl = "https://services.swpc.noaa.gov/text/sgas.txt";
 inline const char *kEventsUrl = "https://services.swpc.noaa.gov/text/solar-geophysical-event-reports.txt";

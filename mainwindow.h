@@ -40,6 +40,7 @@ public:
     // tests: the time "now" (UTC), and where NOAA's files are read from (a folder: file names as NOAA's)
     void setNowForTest(const QDateTime &utc) { m_testNow = utc; }
     void setDataFolderForTest(const QString &dir) { m_testDir = dir; }
+    void setGeoFtpForTest(const QString &url) { m_geoFtpForTest = url; }   // AK.txt from a test FTP server
     bool busy() const { return m_busy; }
     SolarStore &store() { return m_store; }
 
@@ -126,6 +127,7 @@ private:
     QDateTime m_lastUpdate;                  // the last full update (UTC)
     QDateTime m_testNow;
     QString m_testDir;
+    QString m_geoFtpForTest;
     QPointer<QWidget> m_help;
     QTextBrowser *m_helpText = nullptr;
     QLabel *m_hamqslImage = nullptr;

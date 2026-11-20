@@ -42,10 +42,11 @@ Tests: `-DWSPRSOLAR_TESTS=ON`, then `build/solar_test` and (with `QT_QPA_PLATFOR
 
 ## Differences from the C# version
 
-- **A and K indices**: the C# version read `AK.txt` from NOAA's FTP site. Qt has no FTP, so WSPR Solar 2
-  asks for the same file over https and, if that doesn't work, uses NOAA's
-  `daily-geomagnetic-indices.txt`. That file has no Boulder line, so the second row then shows
-  **Fredericksburg** (another mid-latitude US station), and says so.
+- **A and K indices**: `AK.txt` comes from NOAA's FTP site, as in the C# version (Qt has no FTP, so
+  WSPR Solar 2 has its own small FTP download, `ftpget.cpp`). If FTP doesn't work, it asks for the same
+  file over https, and if that doesn't work either, uses NOAA's `daily-geomagnetic-indices.txt`. That
+  file has no Boulder line, so the second row then shows **Fredericksburg** (another mid-latitude US
+  station), and says so.
 - **Database columns widened**: the proton-flux, flare and radio-burst columns (`pf00`..`s21`) are
   widened from 25 to 300 characters on start-up, if they are narrower. The C# version wrote up to 300
   characters, which MariaDB/MySQL in their default "strict" mode refuse for a 25-character column, so on
